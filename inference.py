@@ -13,7 +13,7 @@ def predict_and_plot_grid(model,
                           classes,
                           grid_size=3):
     model.eval()
-    fig, axes = plt.subplots(grid_size, grid_size, figsize=(9, 9))
+    fig, axes = plt.subplots(grid_size, grid_size, figsize=(10, 6))
     for i in range(grid_size):
         for j in range(grid_size):
             idx = random.randint(0, len(dataset) - 1)
