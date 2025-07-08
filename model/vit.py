@@ -91,3 +91,7 @@ class VisionTransformer(nn.Module):
         x = self.norm(x)
         cls_token = x[:, 0]
         return self.head(cls_token)
+
+if __name__ == "__main__":
+    vit = VisionTransformer()
+    print(vit)
