@@ -70,7 +70,7 @@ if __name__ == '__main__':
     train_dataloader, test_dataloader = download_dataset(root='./data', isDownload=True, batch_size=vit.ViTConfig.batch_size)
 
     model = vit.VisionTransformer().to(device)
-    model.load_state_dict(torch.load("./checkpoints/vit_epoch_10.pth"))
+    model.load_state_dict(torch.load("./checkpoints/vit_epoch_10.pth", map_location=device))
     model.eval()
 
     parser = argparse.ArgumentParser(description="ViT Inference and Evaluation")
