@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import torch
 import random
 import numpy as np
+import argparse
+from torchmetrics.classification import MulticlassAveragePrecision
 
 from utils.download_dataset import download_dataset
 from model import vit
@@ -36,6 +38,34 @@ def predict_and_plot_grid(model,
     plt.tight_layout()
     plt.show()
      
+def evaluate_model(model, test_dataloader, train_dataloader, device):
+    print("Running evaluation...")
+    num_classes = len(train_dataloader.dataset.classes)
+    metric = MulticlassAveragePrecision(num_classes=num_classes, average=None, thresholds=None).to(device)
+    
+    all_preds = []
+    all_targets = []
+
+    with torch.no_grad():
+        for images, labels in test_dataloader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            all_preds.append(outputs)
+            all_targets.append(labels)
+    
+    all_preds = torch.cat(all_preds)
+    all_targets = torch.cat(all_targets)
+
+    metric.update(all_preds, all_targets)
+    ap_per_class = metric.compute()
+
+    print("Class Wise Average Precisions")
+    for i, ap in enumerate(ap_per_class):
+        print(f"AP for class {train_dataloader.dataset.classes[i]} = {ap:.4f}")
+    
+    mAP = ap_per_class.mean()
+    print(f"Mean Average Precision : {mAP:.4f}")
+
 if __name__ == '__main__':
     train_dataloader, test_dataloader = download_dataset(root='./data', isDownload=True, batch_size=vit.ViTConfig.batch_size)
 
@@ -43,7 +73,17 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load("./checkpoints/vit_epoch_10.pth"))
     model.eval()
 
-    predict_and_plot_grid(model, test_dataloader.dataset, 
-                          classes=train_dataloader.dataset.classes, 
-                          grid_size=3)
+    parser = argparse.ArgumentParser(description="ViT Inference and Evaluation")
+    parser.add_argument("--infer", action="store_true", help="Run inference and plot predictions")
+    parser.add_argument("--eval", action="store_true", help="Evaluate model performance (mAP)")
+    args = parser.parse_args()
+
+    if args.infer:
+        predict_and_plot_grid(model, test_dataloader.dataset, 
+                              classes=train_dataloader.dataset.classes, 
+                              grid_size=3)
+    elif args.eval:
+        evaluate_model(model, test_dataloader, train_dataloader, device)
+    else:
+        parser.print_help()
     
