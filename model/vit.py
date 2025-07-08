@@ -10,7 +10,7 @@ class ViTConfig:
     num_channels: int = 3
     embed_dim: int = 256
     image_size: int = 32
-    patch_size: int = 16
+    patch_size: int = 4
     # EncoderBlock
     num_attention_heads: int = 8
     attention_dropout: float = 0.0
